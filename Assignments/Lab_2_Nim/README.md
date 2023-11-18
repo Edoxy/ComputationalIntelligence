@@ -1,0 +1,2 @@
+# LAB 2 Nim Game
+The initial logic of the policy based on a set of Floating Numbers was developed in collaboration with Abdelouahab Moubane. The code implementing the evolution strategies is heavily inspired by the code of Prof. Squillero published in the coure repository.
