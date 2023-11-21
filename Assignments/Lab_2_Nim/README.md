@@ -14,7 +14,3 @@ This project optimises uses Evolution Strategies to optimise a parametric strate
 - ...
 
 The strategy now chooses between all the possible move that we can make from a position, what move is associated to the maximum weight using the nim-sum of the move.
-
-    
- 1 1
-1 1 1
