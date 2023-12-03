@@ -35,6 +35,28 @@ def xover_bisection(
     return newborn
 
 
+def xover_bisection_random(
+    parent1: Tuple[float, List[bool]], parent2: Tuple[float, List[bool]]
+) -> np.array:
+    """
+    Function executing a simple crossover between 2 parents in the a random point point\n
+    return: genome of the new individual
+    """
+
+    _, parent1 = parent1
+    _, parent2 = parent2
+    l = len(parent1)
+
+    if not l == len(parent2):
+        print("Parent lenght must be the same")
+        return None
+
+    xover_point = random.randint(1, l - 1)
+
+    newborn = np.concatenate((parent1[:xover_point], parent2[xover_point:]))
+    return newborn
+
+
 def xover_multiple_point(
     parent1: Tuple[float, List[bool]], parent2: Tuple[float, List[bool]]
 ) -> np.array:
@@ -135,9 +157,11 @@ def random_change(parent: Tuple[float, List[bool]]) -> np.array:
     Genetic Operator that mutates a parent
     """
     _, parent = parent
-    index = randint(0, len(parent) - 1)
+    n_random_mutation = random.randint(1, len(parent) // 50)
+    indexes = [randint(0, len(parent) - 1) for _ in range(n_random_mutation)]
     newborn = deepcopy(parent)
-    newborn[index] = not newborn[index]
+    for index in indexes:
+        newborn[index] = not newborn[index]
     return newborn.astype(int)
 
 
@@ -315,12 +339,13 @@ def EA_heap(
     parent_selection_func: (function) >  Function that, given the population and its fitness, return the parent selected\n
     return: (tuple) > (fitness of the best individual, best individual)\n
     """
+
     # matrix where each row is an individual of the population
     population = []
     for _ in range(mu):
         indiv = np.array(
             choices(
-                [0, 1], weights=[random.randint(1, mu), random.randint(1, mu)], k=1000
+                [0, 1], weights=[random.randint(1, 100), random.randint(1, 100)], k=1000
             ),
             dtype=int,
         )
@@ -421,7 +446,9 @@ def EA_Extintions(
     population = []
     # create the first individual
     first = np.array(
-        choices([0, 1], weights=[random.randint(1, mu), random.randint(1, mu)], k=1000),
+        choices(
+            [0, 1], weights=[random.randint(1, 100), random.randint(1, 100)], k=1000
+        ),
         dtype=int,
     )
     first_fitness = fitness(first)
@@ -443,7 +470,7 @@ def EA_Extintions(
                 new_indv = np.array(
                     choices(
                         [0, 1],
-                        weights=[random.randint(1, mu), random.randint(1, mu)],
+                        weights=[random.randint(1, 100), random.randint(1, 100)],
                         k=1000,
                     ),
                     dtype=int,
@@ -505,6 +532,111 @@ def EA_Extintions(
     return heapq.nlargest(1, population)[0]
 
 
+def EA_v2(
+    mu: int,
+    lamda: int,
+    generations: int,
+    tournament_size: int,
+    MUTATION_PROB: float,
+    fitness: Callable[[List[bool]], float],
+    mutation_func: Callable[
+        [Tuple[float, List[bool]], Tuple[float, List[bool]]], List[bool]
+    ],
+    xover_func: Callable[[Tuple[float, List[bool]]], List[bool]],
+    parent_selection_func: Callable[[List[Tuple[float, List[bool]]]], List[bool]],
+) -> Tuple[float, List[bool], List[float], int]:
+    """
+    Function execution a Genetic Algorithm that uses and Heapq to improve the efficiency. Also returns the history of the best fitness found and has a stopping criterion.\n
+    mu: (int) > Is the population size\n
+    lamda: (int) > Is the number of parent that are selected each generation\n
+    generations: (int) > Is the number of generation that the algorithm will run\n
+    tournament_size: (int) > Maximum number of individual partecipating in the tournament for the parent selection
+    MUTATION_PROB: (float) > Probability that a newborn is generated from a mutation instead of a crossover\n
+    fitness: (function) Function that evaluate the individual\n
+    mutation_func: (function) > Genetic operator that, given a single parent makes a mutation\n
+    xover_func: (function) > Genetic operator that, given 2 parents, makes an offspring\n
+    parent_selection_func: (function) >  Function that, given the population and its fitness, return the parent selected\n
+    return: (tuple) > (fitness of the best individual, best individual, history, number of fitness calls)\n
+    """
+
+    PATIENCE = 50 # how many steps without improvements are accepted
+    POP_RANDOMNESS = 50 # how much random the initial population is created; this parameter controls the randomness of the frequency of 1 and 0 in the genome
+    # matrix where each row is an individual of the population
+    population = []
+    # used to keep track of the best fitness found
+    fitness_heap = []
+    # fill the population with random individual
+    for _ in range(mu):
+        indiv = np.array(
+            choices(
+                [0, 1],
+                weights=[
+                    random.randint(1, POP_RANDOMNESS),
+                    random.randint(1, POP_RANDOMNESS),
+                ],
+                k=1000,
+            ),
+            dtype=int,
+        )
+        indiv_fitness = fitness(indiv)
+
+        heapq.heappush(population, (indiv_fitness + 1e-6 * random.random(), indiv))
+        heapq.heappush(fitness_heap, (-indiv_fitness))
+
+    # Generation Cycle
+    history = list()
+    # for gen in range(generations):
+    for step in tqdm(range(generations)):
+        # Offspring Cycle
+        for newborn in range(lamda):
+            if random.random() < MUTATION_PROB:
+                # do mutation
+                # extract the index of the parent
+                parent_index = parent_selection_func(
+                    population, tournament_size=tournament_size
+                )
+                # create a new offspring
+                parent = population[parent_index]
+                newborn = mutation_func(parent)
+                newborn_fitness = fitness(newborn)
+
+                heapq.heappushpop(
+                    population, (newborn_fitness + 1e-6 * random.random(), newborn)
+                )
+                heapq.heappush(fitness_heap, (-newborn_fitness))
+
+            else:
+                # 2 parents and xover
+                parent_index1 = parent_selection_func(
+                    population, tournament_size=tournament_size
+                )
+                parent_index2 = parent_selection_func(
+                    population, tournament_size=tournament_size
+                )
+
+                parent1 = population[parent_index1]
+                parent2 = population[parent_index2]
+
+                newborn = xover_func(parent1, parent2)
+                newborn_fitness = fitness(newborn)
+
+                heapq.heappushpop(
+                    population, (newborn_fitness + 1e-6 * random.random(), newborn)
+                )
+                heapq.heappush(fitness_heap, (-newborn_fitness))
+
+        history.append(-fitness_heap[0])
+
+        # stopping criterion
+        if history[step] > 0.999 or (
+            step >= PATIENCE and history[step] <= history[step - PATIENCE]
+        ):
+            break
+
+    output = heapq.nlargest(1, population)[0]
+    return output[0], output[1], history, fitness.calls
+
+
 def EA_Islands(
     mu: int,
     lamda: int,
@@ -518,9 +650,9 @@ def EA_Islands(
     ],
     xover_func: Callable[[Tuple[float, List[bool]]], List[bool]],
     parent_selection_func: Callable[[List[Tuple[float, List[bool]]]], List[bool]],
-) -> Tuple[float, List[bool]]:
+) -> Tuple[float, List[bool], List[float], int]:
     """
-    Function execution a Genetic Algorithm that uses Niching to preserve diverity. The different islands are executed in parallel and with a tournament size randomly choosen to simulate different environments\n
+    Function execution a Genetic Algorithm that uses Niching to preserve diverity. The different islands are executed in parallel and with a tournament size randomly chosen to simulate different environments\n
     mu: (int) > Is the population size\n
     lamda: (int) > Is the number of parent that are selected each generation\n
     generations: (int) > Is the number of generation that the algorithm will run\n
@@ -531,18 +663,22 @@ def EA_Islands(
     mutation_func: (function) > Genetic operator that, given a single parent makes a mutation\n
     xover_func: (function) > Genetic operator that, given 2 parents, makes an offspring\n
     parent_selection_func: (function) >  Function that, given the population and its fitness, return the parent selected\n
-    return: (tuple) > (fitness of the best individual, best individual)\n
+    return: (tuple) > (fitness of the best individual, best individual, history, number of fitness calls)\n
     """
+
     # ---------------------------------------------------------------------------------
     # Parallel Islands
     # ---------------------------------------------------------------------------------
 
     # Number of processors that will be used in parallel
     N_PROCESSORS = 7
+    PATIENCE = 50 # how many steps without improvements are accepted
+    POP_RANDOMNESS = 50 # how much random the initial population is created; this parameter controls the randomness of the frequency of 1 and 0 in the genome
+    print("Starting Islands phase ...")
     pool = Pool(processes=N_PROCESSORS)
     # Execute the islands in parallel
-    population = pool.starmap(
-        EA_heap,
+    output = pool.starmap(
+        EA_v2,
         [
             [
                 mu,
@@ -560,27 +696,47 @@ def EA_Islands(
             for _ in range(n_islands)
         ],
     )
+    print("Island phase terminated\n")
 
     # ---------------------------------------------------------------------------------
     # Union of the champion of each island
     # ---------------------------------------------------------------------------------
 
+    islands_history = []
+    fitness_heap = []
+    population = []
+    total_fitness_calls = 0
     # The champion of each island is inserted in a new heapq to start a new population
+    for i, o in enumerate(output):
+        heapq.heappush(population, (o[0], o[1]))
+        heapq.heappush(fitness_heap, -o[0])
+        islands_history.append(o[2])
+        total_fitness_calls += o[3]
+        print(o[3], "fitness calls for island ", i + 1)
+
+    print("Starting last population...")
     heapq.heapify(population)
     # populating the remaning places with random individual
     for _ in range(mu - n_islands):
         indiv = np.array(
             choices(
-                [0, 1], weights=[random.randint(1, mu), random.randint(1, mu)], k=1000
+                [0, 1],
+                weights=[
+                    random.randint(1, POP_RANDOMNESS),
+                    random.randint(1, POP_RANDOMNESS),
+                ],
+                k=1000,
             ),
             dtype=int,
         )
         indiv_fitness = fitness(indiv)
-        heapq.heappush(population, (indiv_fitness + 1e-6 * random.random(), indiv))
+        heapq.heappush(population, (indiv_fitness, indiv))
 
     # Generation Cycle
     time_generating_offspring = 0
     time_sorting = 0
+    # for gen in range(generations):
+    history = list()
     # for gen in range(generations):
     for step in tqdm(range(generations)):
         # Offspring Cycle
@@ -603,6 +759,7 @@ def EA_Islands(
                 heapq.heappushpop(
                     population, (newborn_fitness + 1e-6 * random.random(), newborn)
                 )
+                heapq.heappush(fitness_heap, (-newborn_fitness))
                 stop_sorting = time.time()
 
             else:
@@ -625,14 +782,28 @@ def EA_Islands(
                 heapq.heappushpop(
                     population, (newborn_fitness + 1e-6 * random.random(), newborn)
                 )
+                heapq.heappush(fitness_heap, (-newborn_fitness))
                 stop_sorting = time.time()
 
             time_sorting += stop_sorting - start_sorting
 
         stop_leg = time.time()
         time_generating_offspring += stop_leg - start_leg
+        history.append(-fitness_heap[0])
+
+        if -fitness_heap[0] > 0.999 or (
+            step >= PATIENCE and history[step] <= history[step - PATIENCE]
+        ):
+            break
 
     # print(f"Time spent generating {time_generating_offspring:.3} seconds")
     # print(f"Time spent sorting {time_sorting:.3} seconds")
+    output = heapq.nlargest(1, population)[0]
 
-    return heapq.nlargest(1, population)[0]
+    return (
+        output[0],
+        output[1],
+        history,
+        islands_history,
+        (total_fitness_calls + fitness.calls),
+    )
