@@ -10,6 +10,7 @@ All my Evolution Algorithm code is organized inside the EvolutionAlgorithm.py mo
 
 - EA(): this is the first version of the algorithm that I used but it's much too slow to be used so I ended up improving it with a heap queu
 - EA_heap(): second iteration of the algorithm that implements the heap queue
+- EA_Extinction(): my implementation of a genetic algorithm that has periodic extintions: I did not use it in the final notebook becuse in this case it didn0t improve the situation as much as the Islands do.
 ...
 
 I kept this function declarations to make for an easier task when tring to understand the logic of the last iterations of the same functions (EA_v2 or EA_Islands).

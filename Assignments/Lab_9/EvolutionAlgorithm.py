@@ -134,24 +134,6 @@ def xover_random(
     return newborn.astype(int)
 
 
-def xover_or(
-    parent1: Tuple[float, List[bool]], parent2: Tuple[float, List[bool]]
-) -> np.array:
-    """
-    test
-    """
-
-    _, parent1 = parent1
-    _, parent2 = parent2
-
-    if not len(parent1) == len(parent2):
-        print("Parent lenght must be the same")
-        return None
-    newborn = np.logical_or(parent1, parent2)
-
-    return newborn.astype(int)
-
-
 def random_change(parent: Tuple[float, List[bool]]) -> np.array:
     """
     Genetic Operator that mutates a parent
@@ -559,8 +541,8 @@ def EA_v2(
     return: (tuple) > (fitness of the best individual, best individual, history, number of fitness calls)\n
     """
 
-    PATIENCE = 50 # how many steps without improvements are accepted
-    POP_RANDOMNESS = 50 # how much random the initial population is created; this parameter controls the randomness of the frequency of 1 and 0 in the genome
+    PATIENCE = 50  # how many steps without improvements are accepted
+    POP_RANDOMNESS = 50  # how much random the initial population is created; this parameter controls the randomness of the frequency of 1 and 0 in the genome
     # matrix where each row is an individual of the population
     population = []
     # used to keep track of the best fitness found
@@ -672,8 +654,8 @@ def EA_Islands(
 
     # Number of processors that will be used in parallel
     N_PROCESSORS = 7
-    PATIENCE = 50 # how many steps without improvements are accepted
-    POP_RANDOMNESS = 50 # how much random the initial population is created; this parameter controls the randomness of the frequency of 1 and 0 in the genome
+    PATIENCE = 50  # how many steps without improvements are accepted
+    POP_RANDOMNESS = 50  # how much random the initial population is created; this parameter controls the randomness of the frequency of 1 and 0 in the genome
     print("Starting Islands phase ...")
     pool = Pool(processes=N_PROCESSORS)
     # Execute the islands in parallel
