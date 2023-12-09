@@ -13,6 +13,9 @@ from tqdm.auto import tqdm
 from multiprocessing import Pool
 from typing import Callable, List, Tuple
 
+#-------------------------------------------------
+# Genetic Operators
+#-------------------------------------------------
 
 def xover_bisection(
     parent1: Tuple[float, List[bool]], parent2: Tuple[float, List[bool]]
@@ -146,6 +149,9 @@ def random_change(parent: Tuple[float, List[bool]]) -> np.array:
         newborn[index] = not newborn[index]
     return newborn.astype(int)
 
+#-------------------------------------------------
+# First version (slow) > Only to better understand the logic
+#-------------------------------------------------
 
 def tournament(population_fitness: List[float], tournament_size: int) -> np.array:
     """
@@ -257,6 +263,9 @@ def EA(
     print(f"Time spent sorting {time_sorting:.2}")
     return population[-1], population_fitness[-1]
 
+#-------------------------------------------------
+# Improved Version
+#-------------------------------------------------
 
 def tournament_heap(
     population: List[Tuple[float, List[bool]]], tournament_size: int
@@ -302,10 +311,10 @@ def EA_heap(
     tournament_size: int,
     MUTATION_PROB: float,
     fitness: Callable[[List[bool]], float],
-    mutation_func: Callable[
+    mutation_func: Callable[[Tuple[float, List[bool]]], List[bool]],
+    xover_func: Callable[
         [Tuple[float, List[bool]], Tuple[float, List[bool]]], List[bool]
     ],
-    xover_func: Callable[[Tuple[float, List[bool]]], List[bool]],
     parent_selection_func: Callable[[List[Tuple[float, List[bool]]]], List[bool]],
 ) -> Tuple[float, List[bool]]:
     """
@@ -402,10 +411,10 @@ def EA_Extintions(
     MUTATION_PROB: float,
     n_extintions: int,
     fitness: Callable[[List[bool]], float],
-    mutation_func: Callable[
+    mutation_func: Callable[[Tuple[float, List[bool]]], List[bool]],
+    xover_func: Callable[
         [Tuple[float, List[bool]], Tuple[float, List[bool]]], List[bool]
     ],
-    xover_func: Callable[[Tuple[float, List[bool]]], List[bool]],
     parent_selection_func: Callable[[List[Tuple[float, List[bool]]]], List[bool]],
 ) -> Tuple[float, List[bool]]:
     """
@@ -521,10 +530,10 @@ def EA_v2(
     tournament_size: int,
     MUTATION_PROB: float,
     fitness: Callable[[List[bool]], float],
-    mutation_func: Callable[
+    mutation_func: Callable[[Tuple[float, List[bool]]], List[bool]],
+    xover_func: Callable[
         [Tuple[float, List[bool]], Tuple[float, List[bool]]], List[bool]
     ],
-    xover_func: Callable[[Tuple[float, List[bool]]], List[bool]],
     parent_selection_func: Callable[[List[Tuple[float, List[bool]]]], List[bool]],
 ) -> Tuple[float, List[bool], List[float], int]:
     """
@@ -618,6 +627,9 @@ def EA_v2(
     output = heapq.nlargest(1, population)[0]
     return output[0], output[1], history, fitness.calls
 
+#-------------------------------------------------
+# Island Model > Parallel Processing
+#-------------------------------------------------
 
 def EA_Islands(
     mu: int,
@@ -627,10 +639,10 @@ def EA_Islands(
     n_islands: int,
     MUTATION_PROB: float,
     fitness: Callable[[List[bool]], float],
-    mutation_func: Callable[
+    mutation_func: Callable[[Tuple[float, List[bool]]], List[bool]],
+    xover_func: Callable[
         [Tuple[float, List[bool]], Tuple[float, List[bool]]], List[bool]
     ],
-    xover_func: Callable[[Tuple[float, List[bool]]], List[bool]],
     parent_selection_func: Callable[[List[Tuple[float, List[bool]]]], List[bool]],
 ) -> Tuple[float, List[bool], List[float], int]:
     """
