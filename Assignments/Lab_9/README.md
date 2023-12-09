@@ -15,4 +15,6 @@ All my Evolution Algorithm code is organized inside the EvolutionAlgorithm.py mo
 
 I kept this function declarations to make for an easier task when tring to understand the logic of the latest version of the same functions (EA_v2 or EA_Islands).
 
-Moreover in the same module are also declared all the different genetic operators that I tried even if in the final analisys I did not use them all.
+Moreover in the same module are also declared all the different genetic operators that I tried.
+
+The Python Notebook Lab_9EA.ipynb contains all the best combination of parameters and function that I found to solve the various problems instances (many other combination were tried).
