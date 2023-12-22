@@ -42,4 +42,4 @@ The Random Player can only reply in 5 ways instead of 8 (because it's restricted
     • • •   • • •   • • O   • O •   • • •
     • • •   • • •   • • •   • • •   • • O
 
-Given that the only winning move in the position is the central one, we shift the probability of winning against a Random Player from $7/8$ to $4/5$ meaning that is circa $9\%$ less likely to loose on the spot.
+Given that the only winning move in the position is the central one, we shift the probability of winning against a Random Player from $7/8$ to $4/5$ meaning that is circa 9\% less likely to loose on the spot.
