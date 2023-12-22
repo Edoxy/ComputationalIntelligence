@@ -1,3 +1,8 @@
+"""
+Copyright **`(c)`** 2023 Edoardo Vay  `<vay.edoardo@gmail.com>`
+<https://github.com/Edoxy>
+"""
+
 import numpy as np
 import random
 from dataclasses import dataclass

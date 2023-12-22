@@ -2,7 +2,7 @@
 
 ## Contributions
 
-All the code generating the tree structure accounting for the rotations and the symmetry was developed with Abdelouahab Moubane (S305716); the remaning parts were written in close collaboration too.
+All the code generating the tree structure accounting for the rotations and the symmetry was developed with Abdelouahab Moubane (S305716); the remaining parts were written in close collaboration too.
 
 ## LAB 10 Outline
 
