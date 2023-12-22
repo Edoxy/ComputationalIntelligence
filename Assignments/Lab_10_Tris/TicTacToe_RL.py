@@ -521,8 +521,9 @@ class Agent:
         else:
             self.Env.game_reset()
         GAME_END = False
+        print('---Starting Position---')
         print_state(self.Env.CurrentState.state)
-
+        print('---Agent To Move---')
         # Play the game
         while not GAME_END:
             _, Action = self.FindBest(self.Env.CurrentState)
