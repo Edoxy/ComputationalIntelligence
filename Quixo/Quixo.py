@@ -247,6 +247,9 @@ def symmetry(s: tuple[int, ...]) -> tuple[int, ...]:
     )
 
 
+
+#--- STATIC EVALUATION FUNCTIONS ---#
+
 def StaticEval1(state: tuple[int, ...], player_id: bool) -> float:
     """ """
     Eval = 0
@@ -347,7 +350,9 @@ def StaticEval3(state: tuple[int, ...], player_id: bool = True) -> float:
 
 
 def StaticEval4(state: tuple[int, ...], player_id: bool = True) -> float:
-    """ """
+    """ 
+    This approach keeps a score for each row, column and diagonal and uses exponentiation to give a non linear increse in bonus for occuping the same row/column/diagonal
+    """
     Eval = 0
 
     row = np.zeros((5), dtype=np.int64)
@@ -360,19 +365,19 @@ def StaticEval4(state: tuple[int, ...], player_id: bool = True) -> float:
         if state[i] == -1:
             continue
         elif state[i] == player_id:
-            square_bonus = bonus[player_id] * 1.5
+            current_point = bonus[player_id] * 1.5 # if the position has the current player type we add a smal bonus
         else:
-            square_bonus = bonus[not player_id]
+            current_point = bonus[not player_id]
 
-        row[i // 5] += square_bonus
-        column[i % 5] += square_bonus
+        row[i // 5] += current_point # point to current row
+        column[i % 5] += current_point # point to current column
 
-        if i == 0:
-            diagonal[0] += square_bonus
-        elif i % 6 == 0:
-            diagonal[0] += square_bonus
-        elif i % 4 == 0:
-            diagonal[1] += square_bonus
+        if i == 0: # this square is in the first diagonal
+            diagonal[0] += current_point
+        elif i % 6 == 0: # if not the top-left corner and this condition is met, we are in the second diagonal
+            diagonal[0] += current_point
+        elif i % 4 == 0: # the rest of the first diagonal
+            diagonal[1] += current_point
 
     Eval += np.sum(row**3)
     Eval += np.sum(column**3)
@@ -380,6 +385,7 @@ def StaticEval4(state: tuple[int, ...], player_id: bool = True) -> float:
 
     return Eval
 
+#--- OLD ITERATION OF MIN MAX ---#
 
 def min_max_v2(
     state: tuple[int, ...],
@@ -534,6 +540,8 @@ def min_max_v3(
                                 return (best_Eval, best_pos, best_slide)
     return (best_Eval, best_pos, best_slide)
 
+
+#--- LAST VERSION MIN MAX ---#
 
 MAX = 10000
 MIN = -10000
